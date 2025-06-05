@@ -12,7 +12,7 @@ public class FontManager {
                 assert is != null;
                 vt323 = Font.createFont(Font.TRUETYPE_FONT, is);
             } catch (Exception e) {
-                vt323 = new Font("Monospaced", Font.BOLD, 24);
+                vt323 = new Font("Monospaced", Font.BOLD, (int) size);
             }
         }
         return vt323.deriveFont(size);
