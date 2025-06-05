@@ -3,14 +3,15 @@ package view;
 import utils.ButtonVariant;
 import utils.FontManager;
 import utils.Panel;
+import view.game.GamePanel;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class WelcomePanel extends Panel {
-    GameView mainPanel;
+    MainView mainPanel;
 
-    public WelcomePanel(GameView mainPanel) {
+    public WelcomePanel(MainView mainPanel) {
         super("/resources/toppng.com-spaceinvaderslogo-space-invaders-logo-777x336.png");
         this.mainPanel = mainPanel;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
