@@ -12,6 +12,10 @@ public class Position {
         return x;
     }
 
+    public void setX(int newX){
+        this.x = newX;
+    }
+
     public int getY() {
         return y;
     }

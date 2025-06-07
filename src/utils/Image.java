@@ -1,19 +1,18 @@
 package utils;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
 
-public class Panel extends JPanel {
+public class Image {
     private final BufferedImage image;
 
-    public Panel(String imagePath) {
-        this.image = this.setImagePath(imagePath);
+    public Image(String imagePath) {
+        this.image = loadImage(imagePath);
     }
 
-    protected BufferedImage setImagePath(String path) {
+    private BufferedImage loadImage(String path) {
         try {
             return ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream(path)));
         } catch (IOException e) {

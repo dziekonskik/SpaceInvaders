@@ -1,9 +1,9 @@
-import view.GameView;
+import view.MainView;
 
 public class Main {
     public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(() -> {
-            GameView view = new GameView();
+            MainView view = new MainView();
             view.setVisible(true);
         });
     }
