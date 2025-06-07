@@ -2,17 +2,18 @@ package view;
 
 import utils.ButtonVariant;
 import utils.FontManager;
-import utils.Panel;
+import utils.Image;
 import view.game.GamePanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class WelcomePanel extends Panel {
+public class WelcomePanel extends JPanel {
     MainView mainPanel;
+    private final Image logo;
 
     public WelcomePanel(MainView mainPanel) {
-        super("/resources/toppng.com-spaceinvaderslogo-space-invaders-logo-777x336.png");
+        this.logo = new Image("/resources/toppng.com-spaceinvaderslogo-space-invaders-logo-777x336.png");
         this.mainPanel = mainPanel;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Box.createVerticalGlue());
@@ -35,13 +36,13 @@ public class WelcomePanel extends Panel {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        if (this.getImage() != null) {
+        if (this.logo.getImage() != null) {
             int imgWidth = (int) (getWidth() * 0.5);
             int imgHeight = (int) (getHeight() * 0.4);
             int posX = getWidth()/2 - imgWidth/2;
             int posY = (int) (getHeight() * 0.10);
 
-            g.drawImage(this.getImage(), posX, posY, imgWidth, imgHeight, this);
+            g.drawImage(this.logo.getImage(), posX, posY, imgWidth, imgHeight, this);
 
             String h1 = "Edition PJATK";
             FontMetrics fm = g.getFontMetrics();
