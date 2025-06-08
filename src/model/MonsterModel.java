@@ -10,11 +10,17 @@ import java.awt.image.BufferedImage;
 public class MonsterModel {
     private Image image;
     private Position position;
-    private final Size size = new Size(100, 100);
+    private final Size baseSize = new Size(100, 100);
+    private Size size;
+    private final MonsterLevel level;
+    private int hitsLeft;
 
     public MonsterModel(Position position ,MonsterLevel level) {
         this.position = position;
+        this.level = level;
+        this.hitsLeft = level.getHitsToKill();
         this.image = new Image(level.getImagePath());
+        this.size = new Size(baseSize.getWidth(), baseSize.getHeight());
     }
 
     public int getX() {
@@ -37,5 +43,19 @@ public class MonsterModel {
     }
     public BufferedImage getImage() {
         return image.getImage();
+    }
+    public MonsterLevel getLevel() {
+        return level;
+    }
+    public int getHitsLeft() {
+        return hitsLeft;
+    }
+    public boolean hit() {
+        hitsLeft--;
+        size = new Size(
+                (int) (size.getWidth() * 0.95),
+                (int) (size.getHeight() * 0.95)
+        );
+        return hitsLeft <= 0;
     }
 }

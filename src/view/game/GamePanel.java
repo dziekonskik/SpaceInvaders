@@ -16,6 +16,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class GamePanel extends JPanel {
     private GameModel gameModel;
@@ -74,8 +75,8 @@ public class GamePanel extends JPanel {
         });
 
         timer = new Timer(50, e -> {
-            if (isMovingLeft) playerController.move(-10, 0, getWidth());
-            if (isMovingRight) playerController.move(10, 0, getWidth());
+            if (isMovingLeft) playerController.move(-10, 0, getWidth() - player.getWidth());
+            if (isMovingRight) playerController.move(10, 0, getWidth() - player.getWidth());
             if (isShooting) {
                 int bulletY = getHeight() - player.getHeight() - 50;
                 bullets.add(playerController.shoot(bulletY));
@@ -85,9 +86,12 @@ public class GamePanel extends JPanel {
             for (BulletModel bullet : bullets) {
                 bullet.moveUp();
             }
+
+            handleCollision();
             bullets.removeIf(b -> b.getY() + b.getHeight() < 0);
             repaint();
         });
+
         timer.start();
 
         monsterTimer = new Timer(300, e -> {
@@ -122,11 +126,7 @@ public class GamePanel extends JPanel {
         MonsterModel example = new MonsterModel(new Position(0, 0), MonsterLevel.LEVEL1);
         int monsterWidth = example.getWidth();
         int monsterHeight = example.getHeight();
-        int spacingX = 70;
-        int spacingY = 50;
-
-        monsters.clear();
-
+        int spacingX = 30;
         int totalWidth = cols * monsterWidth + (cols - 1) * spacingX;
         int offsetX = (getWidth() - totalWidth) / 2;
         int offsetY = 100;
@@ -134,7 +134,7 @@ public class GamePanel extends JPanel {
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
                 int x = offsetX + col * (monsterWidth + spacingX);
-                int y = offsetY + row * (monsterHeight + spacingY);
+                int y = offsetY + row * monsterHeight;
                 monsters.add(new MonsterModel(new Position(x, y), MonsterLevel.LEVEL1));
             }
         }
@@ -162,13 +162,13 @@ public class GamePanel extends JPanel {
         int centerX = (getWidth() - player.getWidth()) / 2;
         player.setX(centerX);
     }
+
     private void centerMonstersX() {
         if (monsters.isEmpty()) return;
         int cols = 5;
         MonsterModel example = monsters.get(0);
         int monsterWidth = example.getWidth();
         int spacingX = 70;
-
         int totalWidth = cols * monsterWidth + (cols - 1) * spacingX;
         int offsetX = (getWidth() - totalWidth) / 2;
 
@@ -179,5 +179,36 @@ public class GamePanel extends JPanel {
             m.setX(x);
         }
     }
+
+    private boolean collides(BulletModel bullet, MonsterModel monster) {
+        Rectangle r1 = new Rectangle(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
+        Rectangle r2 = new Rectangle(monster.getX(), monster.getY(), monster.getWidth(), monster.getHeight());
+        return r1.intersects(r2);
+    }
+
+    private void handleCollision() {
+        ArrayList<MonsterModel> hitMonsters = monsters.stream()
+                .filter(monster -> bullets.stream().anyMatch(bullet -> collides(bullet, monster)))
+                .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<BulletModel> hitBullets = bullets.stream()
+                .filter(bullet -> monsters.stream().anyMatch(monster -> collides(bullet, monster)))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        hitMonsters.forEach(monster -> {
+            if (monster.hit()) {
+                int points = monster.getLevel().getPoints();
+                addPointsAsync(points);
+            }
+        });
+        monsters.removeIf(monster -> monster.getHitsLeft() <= 0);
+        bullets.removeAll(hitBullets);
+    }
+
+    private void addPointsAsync(int points) {
+        new Thread(() -> {
+            SwingUtilities.invokeLater(() -> scoreBoard.setScore(points));
+        }).start();
+    }
+
 
 }

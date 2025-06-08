@@ -26,8 +26,8 @@ public class ScoreBoard {
         }
     }
 
-    public void setScore(int newScore) {
-        this.score = newScore;
+    public void setScore(int points) {
+        this.score += points;
         if (score > hiScore) hiScore = score;
     }
 
