@@ -22,6 +22,7 @@ public class GamePanel extends JPanel {
     private GameModel gameModel;
     private Image background;
     private ScoreBoard scoreBoard;
+    private EndGamePopup endGamePopup = null;
     private BattleShipModel player;
     private BattleShipController playerController;
     private MonsterController monsterController;
@@ -32,6 +33,7 @@ public class GamePanel extends JPanel {
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
     private boolean isShooting = false;
+    private boolean levelCleared = false;
 
 
 
@@ -202,6 +204,11 @@ public class GamePanel extends JPanel {
         });
         monsters.removeIf(monster -> monster.getHitsLeft() <= 0);
         bullets.removeAll(hitBullets);
+
+        if (monsters.isEmpty() && !levelCleared) {
+            levelCleared = true; // żeby nie pokazać ponownie
+            SwingUtilities.invokeLater(() -> showVictoryPopup());
+        }
     }
 
     private void addPointsAsync(int points) {
@@ -210,5 +217,21 @@ public class GamePanel extends JPanel {
         }).start();
     }
 
-
+    private void showVictoryPopup() {
+        endGamePopup = new EndGamePopup(
+                "You won level " + (gameModel.getCurrentLevel() + 1) + "!\nPREPARE!",
+                e -> {
+                    remove(endGamePopup);
+                    endGamePopup = null;
+                    revalidate();
+                    repaint();
+                    // ...tu logika co dalej: nowy level, restart gry itd.
+                }
+        );
+        endGamePopup.setBounds(0, 0, getWidth(), getHeight());
+        setLayout(null);
+        add(endGamePopup);
+        revalidate();
+        repaint();
+    }
 }
