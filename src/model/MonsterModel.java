@@ -20,8 +20,14 @@ public class MonsterModel {
     public int getX() {
         return position.getX();
     }
+    public void setX(int newX) {
+        this.position.setX(newX);
+    }
     public int getY() {
         return position.getY();
+    }
+    public void setY(int newY) {
+        this.position.setY(newY);
     }
     public int getWidth() {
         return size.getWidth();

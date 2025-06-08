@@ -1,6 +1,8 @@
 package view.game;
 import controller.BattleShipController;
+import controller.MonsterController;
 import model.BattleShipModel;
+import model.BulletModel;
 import model.GameModel;
 import model.MonsterModel;
 import utils.Image;
@@ -16,12 +18,21 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class GamePanel extends JPanel {
+    private GameModel gameModel;
     private Image background;
     private ScoreBoard scoreBoard;
     private BattleShipModel player;
     private BattleShipController playerController;
+    private MonsterController monsterController;
     private ArrayList<MonsterModel> monsters = new ArrayList<>();
-    private GameModel gameModel;
+    private ArrayList<BulletModel> bullets = new ArrayList<>();
+    private Timer timer;
+    private Timer monsterTimer;
+    private boolean isMovingLeft = false;
+    private boolean isMovingRight = false;
+    private boolean isShooting = false;
+
+
 
     public GamePanel() {
         background = new Image("/resources/bg.jpg");
@@ -29,6 +40,7 @@ public class GamePanel extends JPanel {
         playerController = new BattleShipController(player);
         scoreBoard = new ScoreBoard();
         gameModel = new GameModel();
+        monsterController = new MonsterController(monsters);
         initMonsters();
         setFocusable(true);
 
@@ -36,20 +48,53 @@ public class GamePanel extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_LEFT -> playerController.move(-20, 0, getWidth());
-                    case KeyEvent.VK_RIGHT -> playerController.move(20, 0, getWidth());
-//                    case KeyEvent.VK_SPACE -> shoot();
+                    case KeyEvent.VK_LEFT -> isMovingLeft = true;
+                    case KeyEvent.VK_RIGHT -> isMovingRight = true;
+                    case KeyEvent.VK_SPACE -> isShooting = true;
                 }
-                repaint();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_LEFT -> isMovingLeft = false;
+                    case KeyEvent.VK_RIGHT -> isMovingRight = false;
+                    case KeyEvent.VK_SPACE -> isShooting = false;
+                }
             }
         });
+
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 centerPlayerX();
+                centerMonstersX();
                 repaint();
             }
         });
+
+        timer = new Timer(50, e -> {
+            if (isMovingLeft) playerController.move(-10, 0, getWidth());
+            if (isMovingRight) playerController.move(10, 0, getWidth());
+            if (isShooting) {
+                int bulletY = getHeight() - player.getHeight() - 50;
+                bullets.add(playerController.shoot(bulletY));
+                isShooting = false;
+            }
+
+            for (BulletModel bullet : bullets) {
+                bullet.moveUp();
+            }
+            bullets.removeIf(b -> b.getY() + b.getHeight() < 0);
+            repaint();
+        });
+        timer.start();
+
+        monsterTimer = new Timer(300, e -> {
+            monsterController.moveGroup(getWidth());
+            repaint();
+        });
+        monsterTimer.start();
         SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
 
@@ -62,6 +107,7 @@ public class GamePanel extends JPanel {
 
         scoreBoard.draw((Graphics2D) g, getWidth());
         drawMonsters(g);
+        drawBullets(g);
 
         if (player != null && player.getImage() != null) {
             int x = player.getX();
@@ -70,59 +116,45 @@ public class GamePanel extends JPanel {
         }
     }
 
-    private int[] initMonsters() {
+    private void initMonsters() {
         int rows = 2 + gameModel.getCurrentLevel();
         int cols = 5;
-        int monsterWidth = monsters.stream().mapToInt(MonsterModel::getWidth).max().orElse(0);
-        int monsterHeight =  monsters.stream().mapToInt(MonsterModel::getHeight).max().orElse(0);
+        MonsterModel example = new MonsterModel(new Position(0, 0), MonsterLevel.LEVEL1);
+        int monsterWidth = example.getWidth();
+        int monsterHeight = example.getHeight();
         int spacingX = 70;
         int spacingY = 50;
 
         monsters.clear();
 
-        if (monsters.isEmpty()) {
-            for (int row = 0; row < rows; row++) {
-                for (int col = 0; col < cols; col++) {
-                    int x = col * (monsterWidth + spacingX);
-                    int y = row * (monsterHeight + spacingY);
-                    monsters.add(new MonsterModel(new Position(x, y), MonsterLevel.LEVEL1));
-                }
+        int totalWidth = cols * monsterWidth + (cols - 1) * spacingX;
+        int offsetX = (getWidth() - totalWidth) / 2;
+        int offsetY = 100;
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                int x = offsetX + col * (monsterWidth + spacingX);
+                int y = offsetY + row * (monsterHeight + spacingY);
+                monsters.add(new MonsterModel(new Position(x, y), MonsterLevel.LEVEL1));
             }
         }
-
-        return new int[]{
-                monsterHeight, monsterWidth, rows, cols, spacingX, spacingY
-        };
     }
 
     private void drawMonsters(Graphics g) {
-        int[] config = initMonsters();
-        int monsterHeight = config[0];
-        int monsterWidth  = config[1];
-        int rows          = config[2];
-        int cols          = config[3];
-        int spacingX      = config[4];
-        int spacingY      = config[5];
+        for (MonsterModel monster : monsters) {
+            g.drawImage(
+                    monster.getImage(),
+                    monster.getX(), monster.getY(),
+                    monster.getWidth(), monster.getHeight(),
+                    this
+            );
+        }
+    }
 
-        int totalWidth = cols * monsterWidth + (cols - 1) * spacingX;
-        int offsetX = (getWidth() - totalWidth) / 2;
-        int offsetY = 140;
-
-        int monsterIdx = 0;
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                if (monsterIdx >= monsters.size()) break;
-                MonsterModel monster = monsters.get(monsterIdx);
-                int x = offsetX + col * (monsterWidth + spacingX);
-                int y = offsetY + row * (monsterHeight + spacingY);
-                g.drawImage(
-                        monster.getImage(),
-                        x, y,
-                        monsterWidth, monsterHeight,
-                        this
-                );
-                monsterIdx++;
-            }
+    private void drawBullets(Graphics g) {
+        for (BulletModel bullet : bullets) {
+            g.setColor(Color.YELLOW);
+            g.fillRect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
         }
     }
 
@@ -130,4 +162,22 @@ public class GamePanel extends JPanel {
         int centerX = (getWidth() - player.getWidth()) / 2;
         player.setX(centerX);
     }
+    private void centerMonstersX() {
+        if (monsters.isEmpty()) return;
+        int cols = 5;
+        MonsterModel example = monsters.get(0);
+        int monsterWidth = example.getWidth();
+        int spacingX = 70;
+
+        int totalWidth = cols * monsterWidth + (cols - 1) * spacingX;
+        int offsetX = (getWidth() - totalWidth) / 2;
+
+        for (int idx = 0; idx < monsters.size(); idx++) {
+            int col = idx % cols;
+            MonsterModel m = monsters.get(idx);
+            int x = offsetX + col * (monsterWidth + spacingX);
+            m.setX(x);
+        }
+    }
+
 }
