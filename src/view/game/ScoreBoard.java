@@ -1,5 +1,6 @@
 package view.game;
 
+import model.GameModel;
 import utils.FontManager;
 
 import javax.imageio.ImageIO;
@@ -9,16 +10,11 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class ScoreBoard {
-    private int score;
-    private int hiScore;
-    private int livesCount;
+    private final GameModel gameModel;
     private BufferedImage heartImg;
 
-    public ScoreBoard(){
-        this.score = 0;
-        this.hiScore = 0;
-        this.livesCount = 3;
-
+    public ScoreBoard(GameModel gameModel){
+        this.gameModel = gameModel;
         try {
             heartImg = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/resources/pixel-red-heart.png")));
         } catch (IOException e) {
@@ -26,25 +22,10 @@ public class ScoreBoard {
         }
     }
 
-    public void setScore(int points) {
-        this.score += points;
-        if (score > hiScore) hiScore = score;
-    }
-
-    public int getScore() {
-        return this.score;
-    }
-
-    public int getHiScore() {
-        return this.hiScore;
-    }
-
-    public void setLivesCount(int newLivesCount) {
-        if (newLivesCount < 0) return;
-        this.livesCount = newLivesCount;
-    }
-
     public void draw(Graphics2D g2, int width) {
+        int score = gameModel.getScore();
+        int hiScore = gameModel.getHiScore();
+        int livesCount = gameModel.getLives();
         g2.setColor(new Color(0,0,0,200));
         g2.fillRect(0, 0, width, 100);
 
