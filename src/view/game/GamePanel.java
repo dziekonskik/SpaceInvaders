@@ -28,6 +28,7 @@ public class GamePanel extends JPanel {
     private MonsterController monsterController;
     private ArrayList<MonsterModel> monsters = new ArrayList<>();
     private ArrayList<BulletModel> bullets = new ArrayList<>();
+    private ArrayList<BulletModel> monsterBullets = new ArrayList<>();
     private Timer timer;
     private Timer monsterTimer;
     private boolean isMovingLeft = false;
@@ -41,8 +42,8 @@ public class GamePanel extends JPanel {
         background = new Image("/resources/bg.jpg");
         player = new BattleShipModel(new Position(getWidth()/2,0), new Image("/resources/spaceship3.png"));
         playerController = new BattleShipController(player);
-        scoreBoard = new ScoreBoard();
         gameModel = new GameModel();
+        scoreBoard = new ScoreBoard(gameModel);
         monsterController = new MonsterController(monsters);
         initMonsters();
         setFocusable(true);
@@ -72,6 +73,7 @@ public class GamePanel extends JPanel {
             public void componentResized(ComponentEvent e) {
                 centerPlayerX();
                 centerMonstersX();
+                centerPopupX();
                 repaint();
             }
         });
@@ -96,7 +98,7 @@ public class GamePanel extends JPanel {
 
         timer.start();
 
-        monsterTimer = new Timer(300, e -> {
+        monsterTimer = new Timer(200 / gameModel.getCurrentLevel(), e -> {
             monsterController.moveGroup(getWidth());
             repaint();
         });
@@ -123,7 +125,7 @@ public class GamePanel extends JPanel {
     }
 
     private void initMonsters() {
-        int rows = 2 + gameModel.getCurrentLevel();
+        int rows = 2 * gameModel.getCurrentLevel();
         int cols = 5;
         MonsterModel example = new MonsterModel(new Position(0, 0), MonsterLevel.LEVEL1);
         int monsterWidth = example.getWidth();
@@ -133,11 +135,18 @@ public class GamePanel extends JPanel {
         int offsetX = (getWidth() - totalWidth) / 2;
         int offsetY = 100;
 
+        MonsterLevel monsterLevel = switch (gameModel.getCurrentLevel()) {
+            case 1 -> MonsterLevel.LEVEL1;
+            case 2 -> MonsterLevel.LEVEL2;
+            case 3 -> MonsterLevel.LEVEL3;
+            default -> throw new IllegalStateException("Unexpected value: " + gameModel.getCurrentLevel());
+        };
+
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
                 int x = offsetX + col * (monsterWidth + spacingX);
                 int y = offsetY + row * monsterHeight;
-                monsters.add(new MonsterModel(new Position(x, y), MonsterLevel.LEVEL1));
+                monsters.add(new MonsterModel(new Position(x, y), monsterLevel));
             }
         }
     }
@@ -174,11 +183,18 @@ public class GamePanel extends JPanel {
         int totalWidth = cols * monsterWidth + (cols - 1) * spacingX;
         int offsetX = (getWidth() - totalWidth) / 2;
 
-        for (int idx = 0; idx < monsters.size(); idx++) {
-            int col = idx % cols;
-            MonsterModel m = monsters.get(idx);
+        for (int i = 0; i < monsters.size(); i++) {
+            int col = i % cols;
+            MonsterModel m = monsters.get(i);
             int x = offsetX + col * (monsterWidth + spacingX);
             m.setX(x);
+        }
+    }
+
+    private void centerPopupX() {
+        if (endGamePopup != null) {
+            endGamePopup.setBounds(0, 0, getWidth(), getHeight());
+            endGamePopup.repaint();
         }
     }
 
@@ -206,32 +222,38 @@ public class GamePanel extends JPanel {
         bullets.removeAll(hitBullets);
 
         if (monsters.isEmpty() && !levelCleared) {
-            levelCleared = true; // żeby nie pokazać ponownie
+            levelCleared = true;
             SwingUtilities.invokeLater(() -> showVictoryPopup());
         }
     }
 
     private void addPointsAsync(int points) {
         new Thread(() -> {
-            SwingUtilities.invokeLater(() -> scoreBoard.setScore(points));
+            SwingUtilities.invokeLater(() -> gameModel.addScore(points));
         }).start();
     }
 
     private void showVictoryPopup() {
+        String message = gameModel.getCurrentLevel() == gameModel.getMaxGameLevel() ?
+                "CONGRATS!!! \n YOU WON THE GAME" :
+                "You won level " + gameModel.getCurrentLevel() + "!" + "\nPREPARE!";
         endGamePopup = new EndGamePopup(
-                "You won level " + (gameModel.getCurrentLevel() + 1) + "!\nPREPARE!",
+                message,
                 e -> {
                     remove(endGamePopup);
                     endGamePopup = null;
-                    revalidate();
+                    levelCleared = false;
+                    if (gameModel.getCurrentLevel() == gameModel.getMaxGameLevel()) {
+                        gameModel.reset();
+                    }
+                    gameModel.setCurrentLevel(gameModel.getCurrentLevel() + 1);
+                    initMonsters();
                     repaint();
-                    // ...tu logika co dalej: nowy level, restart gry itd.
                 }
         );
         endGamePopup.setBounds(0, 0, getWidth(), getHeight());
         setLayout(null);
         add(endGamePopup);
-        revalidate();
         repaint();
     }
 }

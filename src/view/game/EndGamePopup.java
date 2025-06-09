@@ -45,6 +45,7 @@ public class EndGamePopup extends JPanel {
         int lineSpacing = 40;
         int startY = boxY + lineSpacing + fm.getAscent();
         for (String line : lines) {
+            line = line.trim();
             int textWidth = fm.stringWidth(line);
             g2.drawString(line, boxX + (boxWidth - textWidth) / 2, startY);
             startY += fm.getAscent() + lineSpacing;
