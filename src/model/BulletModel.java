@@ -28,4 +28,8 @@ public class BulletModel {
     public void moveUp() {
         position.setY(position.getY() - speed);
     }
+    public void moveDown() {
+        position.setY(position.getY() + speed);
+    }
+
 }

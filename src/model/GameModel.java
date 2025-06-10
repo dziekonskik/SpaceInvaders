@@ -2,7 +2,6 @@ package model;
 
 public class GameModel {
     private int currentLevel = 1;
-    private final int maxGameLevel = 3;
     private int score = 0;
     private int hiScore = 0;
     private int lives = 3;
@@ -28,7 +27,7 @@ public class GameModel {
     }
 
     public int getMaxGameLevel() {
-        return maxGameLevel;
+        return 3;
     }
 
     public void setLives(int lives) {
@@ -42,6 +41,10 @@ public class GameModel {
     public void reset() {
         score = 0;
         lives = 3;
-        currentLevel = 0;
+        currentLevel = 1;
+    }
+    public void restart() {
+        reset();
+        hiScore = 0;
     }
 }

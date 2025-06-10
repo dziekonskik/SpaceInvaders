@@ -31,6 +31,7 @@ public class GamePanel extends JPanel {
     private ArrayList<BulletModel> monsterBullets = new ArrayList<>();
     private Timer timer;
     private Timer monsterTimer;
+    private Timer monsterShootTimer;
     private boolean isMovingLeft = false;
     private boolean isMovingRight = false;
     private boolean isShooting = false;
@@ -91,8 +92,13 @@ public class GamePanel extends JPanel {
                 bullet.moveUp();
             }
 
+            for (BulletModel bullet : monsterBullets) {
+                bullet.moveDown();
+            }
+
             handleCollision();
             bullets.removeIf(b -> b.getY() + b.getHeight() < 0);
+            monsterBullets.removeIf(b -> b.getY() > getHeight());
             repaint();
         });
 
@@ -103,6 +109,28 @@ public class GamePanel extends JPanel {
             repaint();
         });
         monsterTimer.start();
+
+        monsterShootTimer = new Timer(5000 / gameModel.getCurrentLevel(), e -> {
+            if (monsters.isEmpty()) return;
+
+            int shots = switch (gameModel.getCurrentLevel()) {
+                case 2 -> 2;
+                case 3 -> 3;
+                default -> 1;
+            };
+
+            java.util.Collections.shuffle(monsters);
+            shots = Math.min(shots, monsters.size());
+
+            for (int i = 0; i < shots; i++) {
+                MonsterModel shooter = monsters.get(i);
+                int bulletX = shooter.getX() + shooter.getWidth() / 2 - 4;
+                int bulletY = shooter.getY() + shooter.getHeight();
+                monsterBullets.add(new BulletModel(new Position(bulletX, bulletY)));
+            }
+        });
+        monsterShootTimer.start();
+
         SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
 
@@ -167,6 +195,10 @@ public class GamePanel extends JPanel {
             g.setColor(Color.YELLOW);
             g.fillRect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
         }
+        for (BulletModel bullet : monsterBullets) {
+            g.setColor(Color.RED);
+            g.fillRect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
+        }
     }
 
     private void centerPlayerX() {
@@ -211,6 +243,9 @@ public class GamePanel extends JPanel {
         ArrayList<BulletModel> hitBullets = bullets.stream()
                 .filter(bullet -> monsters.stream().anyMatch(monster -> collides(bullet, monster)))
                 .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<BulletModel> playerHitBullets = monsterBullets.stream()
+                .filter(this::collidesWithPlayer)
+                .collect(Collectors.toCollection(ArrayList::new));
 
         hitMonsters.forEach(monster -> {
             if (monster.hit()) {
@@ -223,8 +258,13 @@ public class GamePanel extends JPanel {
 
         if (monsters.isEmpty() && !levelCleared) {
             levelCleared = true;
-            SwingUtilities.invokeLater(() -> showVictoryPopup());
+            SwingUtilities.invokeLater(this::showVictoryPopup);
         }
+        if (!playerHitBullets.isEmpty()) {
+            gameModel.loseLife();
+            showDefeatPopup();
+        }
+        monsterBullets.removeAll(playerHitBullets);
     }
 
     private void addPointsAsync(int points) {
@@ -233,21 +273,21 @@ public class GamePanel extends JPanel {
         }).start();
     }
 
-    private void showVictoryPopup() {
-        String message = gameModel.getCurrentLevel() == gameModel.getMaxGameLevel() ?
-                "CONGRATS!!! \n YOU WON THE GAME" :
-                "You won level " + gameModel.getCurrentLevel() + "!" + "\nPREPARE!";
+    private void showPopup(String message, Runnable onClose) {
+        if (endGamePopup != null) return;
+        timer.stop();
+        monsterTimer.stop();
+        monsterShootTimer.stop();
+
         endGamePopup = new EndGamePopup(
                 message,
                 e -> {
                     remove(endGamePopup);
                     endGamePopup = null;
-                    levelCleared = false;
-                    if (gameModel.getCurrentLevel() == gameModel.getMaxGameLevel()) {
-                        gameModel.reset();
-                    }
-                    gameModel.setCurrentLevel(gameModel.getCurrentLevel() + 1);
-                    initMonsters();
+                    timer.start();
+                    monsterTimer.start();
+                    monsterShootTimer.start();
+                    onClose.run();
                     repaint();
                 }
         );
@@ -255,5 +295,44 @@ public class GamePanel extends JPanel {
         setLayout(null);
         add(endGamePopup);
         repaint();
+    }
+
+    private void showVictoryPopup() {
+        String message = gameModel.getCurrentLevel() == gameModel.getMaxGameLevel() ?
+                "CONGRATS!!! \n YOU WON THE GAME" :
+                "You won level " + gameModel.getCurrentLevel() + "!" + "\nPREPARE!";
+
+        showPopup(message, () -> {
+            levelCleared = false;
+            bullets.clear();
+            monsterBullets.clear();
+            if (gameModel.getCurrentLevel() == gameModel.getMaxGameLevel()) {
+                gameModel.reset();
+            } else gameModel.setCurrentLevel(gameModel.getCurrentLevel() + 1);
+            initMonsters();
+        });
+    }
+
+    private void showDefeatPopup() {
+        String lifeGrammar = gameModel.getLives() > 1 ? "lives!" : "life!";
+        if (gameModel.getLives() <= 0) {
+            showPopup("YOU LOST :(", () -> {
+                gameModel.restart();
+                gameModel.setCurrentLevel(1);
+                monsters.clear();
+                bullets.clear();
+                monsterBullets.clear();
+                initMonsters();
+            });
+        } else {
+            showPopup("You have " + gameModel.getLives() + " " + lifeGrammar, () -> {});
+        }
+    }
+
+    private boolean collidesWithPlayer(BulletModel bullet) {
+        Rectangle r1 = new Rectangle(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
+        int playerY = getHeight() - player.getHeight() - 50;
+        Rectangle r2 = new Rectangle(player.getX(), playerY, player.getWidth(), player.getHeight());
+        return r1.intersects(r2);
     }
 }
