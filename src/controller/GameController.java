@@ -124,7 +124,7 @@ public class GameController {
         hitMonsters.forEach(monster -> {
             if (monster.hit()) {
                 int points = monster.getLevel().getPoints();
-                SwingUtilities.invokeLater(() -> gameModel.addScore(points));
+                gamePanel.getScoreBoardController().addScore(points);
             }
         });
 
@@ -137,8 +137,7 @@ public class GameController {
         }
 
         if (!playerHitBullets.isEmpty()) {
-            gameModel.loseLife();
-            showDefeatPopup();
+            gamePanel.getScoreBoardController().loseLife(this::showDefeatPopup);
         }
         monsterBullets.removeAll(playerHitBullets);
     }

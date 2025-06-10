@@ -1,6 +1,7 @@
 package view.game;
 
 import controller.GameController;
+import controller.ScoreBoardController;
 import model.BattleShipModel;
 import model.BulletModel;
 import model.GameModel;
@@ -24,6 +25,7 @@ public class GamePanel extends JPanel {
     private EndGamePopup endGamePopup = null;
     private final BattleShipModel player;
     private final GameController gameController;
+    private final ScoreBoardController scoreBoardController;
     private final ArrayList<MonsterModel> monsters = new ArrayList<>();
     private final ArrayList<BulletModel> bullets = new ArrayList<>();
     private final ArrayList<BulletModel> monsterBullets = new ArrayList<>();
@@ -35,6 +37,7 @@ public class GamePanel extends JPanel {
         player = new BattleShipModel(new Position(getWidth() / 2, 0), new Image("/resources/spaceship3.png"));
         gameModel = new GameModel();
         scoreBoard = new ScoreBoard(gameModel);
+        scoreBoardController = new ScoreBoardController(gameModel, this::repaint, this::repaint);
 
         initMonsters();
 
@@ -199,5 +202,9 @@ public class GamePanel extends JPanel {
 
     public EndGamePopup getEndGamePopup() {
         return endGamePopup;
+    }
+
+    public ScoreBoardController getScoreBoardController() {
+        return scoreBoardController;
     }
 }
