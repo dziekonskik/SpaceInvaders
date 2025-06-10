@@ -99,6 +99,18 @@ public class GamePanel extends JPanel {
             handleCollision();
             bullets.removeIf(b -> b.getY() + b.getHeight() < 0);
             monsterBullets.removeIf(b -> b.getY() > getHeight());
+
+            boolean monstersReachedPlayer = monsters.stream().anyMatch(monster -> {
+                int monsterBottomY = monster.getY() + monster.getHeight();
+                int playerTopY = getHeight() - player.getHeight() - 50;
+                return monsterBottomY >= playerTopY;
+            });
+
+            if (monstersReachedPlayer && gameModel.getLives() > 0 && endGamePopup == null) {
+                gameModel.setLives(0); // lose all lives
+                showDefeatPopup();
+            }
+
             repaint();
         });
 
