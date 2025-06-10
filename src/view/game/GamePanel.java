@@ -1,6 +1,6 @@
 package view.game;
-import controller.BattleShipController;
-import controller.MonsterController;
+
+import controller.GameController;
 import model.BattleShipModel;
 import model.BulletModel;
 import model.GameModel;
@@ -16,7 +16,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class GamePanel extends JPanel {
     private GameModel gameModel;
@@ -24,47 +23,43 @@ public class GamePanel extends JPanel {
     private ScoreBoard scoreBoard;
     private EndGamePopup endGamePopup = null;
     private BattleShipModel player;
-    private BattleShipController playerController;
-    private MonsterController monsterController;
+    private GameController gameController;
     private ArrayList<MonsterModel> monsters = new ArrayList<>();
     private ArrayList<BulletModel> bullets = new ArrayList<>();
     private ArrayList<BulletModel> monsterBullets = new ArrayList<>();
-    private Timer timer;
-    private Timer monsterTimer;
-    private Timer monsterShootTimer;
-    private boolean isMovingLeft = false;
-    private boolean isMovingRight = false;
-    private boolean isShooting = false;
-    private boolean levelCleared = false;
-
-
+    private boolean[] playerMovement = new boolean[2];
+    private boolean[] playerShooting = new boolean[1];
 
     public GamePanel() {
         background = new Image("/resources/bg.jpg");
-        player = new BattleShipModel(new Position(getWidth()/2,0), new Image("/resources/spaceship3.png"));
-        playerController = new BattleShipController(player);
+        player = new BattleShipModel(new Position(getWidth() / 2, 0), new Image("/resources/spaceship3.png"));
         gameModel = new GameModel();
         scoreBoard = new ScoreBoard(gameModel);
-        monsterController = new MonsterController(monsters);
+
         initMonsters();
+
+        gameController = new GameController(gameModel, player, monsters, bullets, monsterBullets, this);
+        gameController.startGameLoop(playerMovement, playerShooting);
+        gameController.startTimers();
+
         setFocusable(true);
 
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_LEFT -> isMovingLeft = true;
-                    case KeyEvent.VK_RIGHT -> isMovingRight = true;
-                    case KeyEvent.VK_SPACE -> isShooting = true;
+                    case KeyEvent.VK_LEFT -> playerMovement[0] = true;
+                    case KeyEvent.VK_RIGHT -> playerMovement[1] = true;
+                    case KeyEvent.VK_SPACE -> playerShooting[0] = true;
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_LEFT -> isMovingLeft = false;
-                    case KeyEvent.VK_RIGHT -> isMovingRight = false;
-                    case KeyEvent.VK_SPACE -> isShooting = false;
+                    case KeyEvent.VK_LEFT -> playerMovement[0] = false;
+                    case KeyEvent.VK_RIGHT -> playerMovement[1] = false;
+                    case KeyEvent.VK_SPACE -> playerShooting[0] = false;
                 }
             }
         });
@@ -78,70 +73,6 @@ public class GamePanel extends JPanel {
                 repaint();
             }
         });
-
-        timer = new Timer(50, e -> {
-            if (isMovingLeft) playerController.move(-10, 0, getWidth() - player.getWidth());
-            if (isMovingRight) playerController.move(10, 0, getWidth() - player.getWidth());
-            if (isShooting) {
-                int bulletY = getHeight() - player.getHeight() - 50;
-                bullets.add(playerController.shoot(bulletY));
-                isShooting = false;
-            }
-
-            for (BulletModel bullet : bullets) {
-                bullet.moveUp();
-            }
-
-            for (BulletModel bullet : monsterBullets) {
-                bullet.moveDown();
-            }
-
-            handleCollision();
-            bullets.removeIf(b -> b.getY() + b.getHeight() < 0);
-            monsterBullets.removeIf(b -> b.getY() > getHeight());
-
-            boolean monstersReachedPlayer = monsters.stream().anyMatch(monster -> {
-                int monsterBottomY = monster.getY() + monster.getHeight();
-                int playerTopY = getHeight() - player.getHeight() - 50;
-                return monsterBottomY >= playerTopY;
-            });
-
-            if (monstersReachedPlayer && gameModel.getLives() > 0 && endGamePopup == null) {
-                gameModel.setLives(0); // lose all lives
-                showDefeatPopup();
-            }
-
-            repaint();
-        });
-
-        timer.start();
-
-        monsterTimer = new Timer(200 / gameModel.getCurrentLevel(), e -> {
-            monsterController.moveGroup(getWidth());
-            repaint();
-        });
-        monsterTimer.start();
-
-        monsterShootTimer = new Timer(5000 / gameModel.getCurrentLevel(), e -> {
-            if (monsters.isEmpty()) return;
-
-            int shots = switch (gameModel.getCurrentLevel()) {
-                case 2 -> 2;
-                case 3 -> 3;
-                default -> 1;
-            };
-
-            java.util.Collections.shuffle(monsters);
-            shots = Math.min(shots, monsters.size());
-
-            for (int i = 0; i < shots; i++) {
-                MonsterModel shooter = monsters.get(i);
-                int bulletX = shooter.getX() + shooter.getWidth() / 2 - 4;
-                int bulletY = shooter.getY() + shooter.getHeight();
-                monsterBullets.add(new BulletModel(new Position(bulletX, bulletY)));
-            }
-        });
-        monsterShootTimer.start();
 
         SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
@@ -160,11 +91,13 @@ public class GamePanel extends JPanel {
         if (player != null && player.getImage() != null) {
             int x = player.getX();
             int y = getHeight() - player.getHeight() - 50;
-            g.drawImage(player.getImage(), x , y, player.getWidth(), player.getHeight(), this);
+            g.drawImage(player.getImage(), x, y, player.getWidth(), player.getHeight(), this);
         }
     }
 
-    private void initMonsters() {
+    public void initMonsters() {
+        monsters.clear();
+
         int rows = 2 * gameModel.getCurrentLevel();
         int cols = 5;
         MonsterModel example = new MonsterModel(new Position(0, 0), MonsterLevel.LEVEL1);
@@ -242,109 +175,29 @@ public class GamePanel extends JPanel {
         }
     }
 
-    private boolean collides(BulletModel bullet, MonsterModel monster) {
-        Rectangle r1 = new Rectangle(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
-        Rectangle r2 = new Rectangle(monster.getX(), monster.getY(), monster.getWidth(), monster.getHeight());
-        return r1.intersects(r2);
-    }
-
-    private void handleCollision() {
-        ArrayList<MonsterModel> hitMonsters = monsters.stream()
-                .filter(monster -> bullets.stream().anyMatch(bullet -> collides(bullet, monster)))
-                .collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<BulletModel> hitBullets = bullets.stream()
-                .filter(bullet -> monsters.stream().anyMatch(monster -> collides(bullet, monster)))
-                .collect(Collectors.toCollection(ArrayList::new));
-        ArrayList<BulletModel> playerHitBullets = monsterBullets.stream()
-                .filter(this::collidesWithPlayer)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        hitMonsters.forEach(monster -> {
-            if (monster.hit()) {
-                int points = monster.getLevel().getPoints();
-                addPointsAsync(points);
-            }
-        });
-        monsters.removeIf(monster -> monster.getHitsLeft() <= 0);
-        bullets.removeAll(hitBullets);
-
-        if (monsters.isEmpty() && !levelCleared) {
-            levelCleared = true;
-            SwingUtilities.invokeLater(this::showVictoryPopup);
-        }
-        if (!playerHitBullets.isEmpty()) {
-            gameModel.loseLife();
-            showDefeatPopup();
-        }
-        monsterBullets.removeAll(playerHitBullets);
-    }
-
-    private void addPointsAsync(int points) {
-        new Thread(() -> {
-            SwingUtilities.invokeLater(() -> gameModel.addScore(points));
-        }).start();
-    }
-
-    private void showPopup(String message, Runnable onClose) {
+    public void showPopup(String message, Runnable onClose) {
         if (endGamePopup != null) return;
-        timer.stop();
-        monsterTimer.stop();
-        monsterShootTimer.stop();
+
+        gameController.stopTimers();
 
         endGamePopup = new EndGamePopup(
                 message,
                 e -> {
                     remove(endGamePopup);
                     endGamePopup = null;
-                    timer.start();
-                    monsterTimer.start();
-                    monsterShootTimer.start();
+                    gameController.startTimers();
                     onClose.run();
                     repaint();
                 }
         );
+
         endGamePopup.setBounds(0, 0, getWidth(), getHeight());
         setLayout(null);
         add(endGamePopup);
         repaint();
     }
 
-    private void showVictoryPopup() {
-        String message = gameModel.getCurrentLevel() == gameModel.getMaxGameLevel() ?
-                "CONGRATS!!! \n YOU WON THE GAME" :
-                "You won level " + gameModel.getCurrentLevel() + "!" + "\nPREPARE!";
-
-        showPopup(message, () -> {
-            levelCleared = false;
-            bullets.clear();
-            monsterBullets.clear();
-            if (gameModel.getCurrentLevel() == gameModel.getMaxGameLevel()) {
-                gameModel.reset();
-            } else gameModel.setCurrentLevel(gameModel.getCurrentLevel() + 1);
-            initMonsters();
-        });
-    }
-
-    private void showDefeatPopup() {
-        String lifeGrammar = gameModel.getLives() > 1 ? "lives!" : "life!";
-        if (gameModel.getLives() <= 0) {
-            showPopup("YOU LOST :(", () -> {
-                gameModel.restart();
-                gameModel.setCurrentLevel(1);
-                monsters.clear();
-                bullets.clear();
-                monsterBullets.clear();
-                initMonsters();
-            });
-        } else {
-            showPopup("You have " + gameModel.getLives() + " " + lifeGrammar, () -> {});
-        }
-    }
-
-    private boolean collidesWithPlayer(BulletModel bullet) {
-        Rectangle r1 = new Rectangle(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
-        int playerY = getHeight() - player.getHeight() - 50;
-        Rectangle r2 = new Rectangle(player.getX(), playerY, player.getWidth(), player.getHeight());
-        return r1.intersects(r2);
+    public EndGamePopup getEndGamePopup() {
+        return endGamePopup;
     }
 }
