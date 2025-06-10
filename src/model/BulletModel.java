@@ -4,7 +4,7 @@ import utils.Position;
 import utils.Size;
 
 public class BulletModel {
-    private Position position;
+    private final Position position;
     private final Size size = new Size(8, 24);
     private final int speed = 16;
 

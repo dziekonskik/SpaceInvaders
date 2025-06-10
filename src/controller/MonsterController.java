@@ -6,8 +6,6 @@ import java.util.List;
 public class MonsterController {
     private final List<MonsterModel> monsters;
     private boolean movingRight = true;
-    private final int step = 8;
-    private final int downStep = 32;
 
     public MonsterController(List<MonsterModel> monsters) {
         this.monsters = monsters;
@@ -15,6 +13,7 @@ public class MonsterController {
 
     public void moveGroup(int panelWidth) {
         if (monsters.isEmpty()) return;
+        int step = 8;
         int dx = movingRight ? step : -step;
 
         boolean atEdge = false;
@@ -32,6 +31,7 @@ public class MonsterController {
 
         if (atEdge) {
             for (MonsterModel m : monsters) {
+                int downStep = 32;
                 m.setY(m.getY() + downStep);
             }
             movingRight = !movingRight;

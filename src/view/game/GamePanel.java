@@ -18,17 +18,17 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class GamePanel extends JPanel {
-    private GameModel gameModel;
-    private Image background;
-    private ScoreBoard scoreBoard;
+    private final GameModel gameModel;
+    private final Image background;
+    private final ScoreBoard scoreBoard;
     private EndGamePopup endGamePopup = null;
-    private BattleShipModel player;
-    private GameController gameController;
-    private ArrayList<MonsterModel> monsters = new ArrayList<>();
-    private ArrayList<BulletModel> bullets = new ArrayList<>();
-    private ArrayList<BulletModel> monsterBullets = new ArrayList<>();
-    private boolean[] playerMovement = new boolean[2];
-    private boolean[] playerShooting = new boolean[1];
+    private final BattleShipModel player;
+    private final GameController gameController;
+    private final ArrayList<MonsterModel> monsters = new ArrayList<>();
+    private final ArrayList<BulletModel> bullets = new ArrayList<>();
+    private final ArrayList<BulletModel> monsterBullets = new ArrayList<>();
+    private final boolean[] playerMovement = new boolean[2];
+    private final boolean[] playerShooting = new boolean[1];
 
     public GamePanel() {
         background = new Image("/resources/bg.jpg");

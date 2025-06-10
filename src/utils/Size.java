@@ -1,7 +1,8 @@
 package utils;
 
 public class Size {
-    private int width,height;
+    private final int width;
+    private final int height;
 
     public Size(int width, int height){
         this.width = width;

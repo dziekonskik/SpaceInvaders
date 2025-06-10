@@ -11,14 +11,14 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class GameController {
-    private GamePanel gamePanel;
-    private GameModel gameModel;
-    private BattleShipModel player;
-    private BattleShipController playerController;
-    private MonsterController monsterController;
-    private ArrayList<MonsterModel> monsters;
-    private ArrayList<BulletModel> bullets;
-    private ArrayList<BulletModel> monsterBullets;
+    private final GamePanel gamePanel;
+    private final GameModel gameModel;
+    private final BattleShipModel player;
+    private final BattleShipController playerController;
+    private final MonsterController monsterController;
+    private final ArrayList<MonsterModel> monsters;
+    private final ArrayList<BulletModel> bullets;
+    private final ArrayList<BulletModel> monsterBullets;
 
     private Timer timer;
     private Timer monsterTimer;

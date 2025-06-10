@@ -7,7 +7,7 @@ import utils.Size;
 import java.awt.image.BufferedImage;
 
 public class BattleShipModel {
-    private Position position;
+    private final Position position;
     private final Size size = new Size(100,100);
     private final Image image;
 

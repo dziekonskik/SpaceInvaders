@@ -7,17 +7,16 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Button extends JButton {
-    private Color bgColor;
-    private Color textColor;
+    private final Color bgColor;
 
     public Button(String text, float fontSize, ButtonVariant variant) {
         super(text);
         this.bgColor = variant.getBgColor();
-        this.textColor = variant.getTextColor();
+        Color textColor = variant.getTextColor();
         setFont(FontManager.getVT323(fontSize));
         setFocusPainted(false);
         setBorderPainted(false);
-        setForeground(this.textColor);
+        setForeground(textColor);
         setContentAreaFilled(false);
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }

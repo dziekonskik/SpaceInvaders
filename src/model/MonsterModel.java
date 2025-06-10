@@ -8,9 +8,8 @@ import utils.Size;
 import java.awt.image.BufferedImage;
 
 public class MonsterModel {
-    private Image image;
-    private Position position;
-    private final Size baseSize = new Size(100, 100);
+    private final Image image;
+    private final Position position;
     private Size size;
     private final MonsterLevel level;
     private int hitsLeft;
@@ -20,6 +19,7 @@ public class MonsterModel {
         this.level = level;
         this.hitsLeft = level.getHitsToKill();
         this.image = new Image(level.getImagePath());
+        Size baseSize = new Size(100, 100);
         this.size = new Size(baseSize.getWidth(), baseSize.getHeight());
     }
 
