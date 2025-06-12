@@ -5,6 +5,7 @@ public class GameModel {
     private int score = 0;
     private int hiScore = 0;
     private int lives = 3;
+    private String playerName;
 
     public int getCurrentLevel() {
         return currentLevel;
@@ -46,5 +47,13 @@ public class GameModel {
     public void restart() {
         reset();
         hiScore = 0;
+    }
+
+    public void setPlayerName(String name) {
+        this.playerName = name;
+    }
+
+    public String getPlayerName() {
+        return playerName;
     }
 }

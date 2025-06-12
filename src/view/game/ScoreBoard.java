@@ -58,7 +58,7 @@ public class ScoreBoard {
         g2.setColor(new Color(255, 231, 76));
         g2.drawString(hiScoreValue, hiScoreValueX, valueY);
 
-        String livesLabel = "LIVES";
+        String livesLabel = gameModel.getPlayerName();
         g2.setFont(FontManager.getVT323(48f));
         g2.setColor(Color.WHITE);
 

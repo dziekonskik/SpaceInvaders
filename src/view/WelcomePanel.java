@@ -1,5 +1,6 @@
 package view;
 
+import model.GameModel;
 import utils.ButtonVariant;
 import utils.FontManager;
 import utils.Image;
@@ -9,20 +10,30 @@ import javax.swing.*;
 import java.awt.*;
 
 public class WelcomePanel extends JPanel {
-    MainView mainPanel;
+    private final MainView mainPanel;
+    private final PlayerNamePanel namePanel;
+    private final GameModel gameModel;
     private final Image logo;
 
     public WelcomePanel(MainView mainPanel) {
-        this.logo = new Image("/resources/toppng.com-spaceinvaderslogo-space-invaders-logo-777x336.png");
+        logo = new Image("/resources/toppng.com-spaceinvaderslogo-space-invaders-logo-777x336.png");
         this.mainPanel = mainPanel;
+        gameModel = new GameModel();
+        namePanel =  new PlayerNamePanel();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Box.createVerticalGlue());
+
+        add(namePanel);
+        add(Box.createRigidArea(new Dimension(0, 32)));
+
         Button playButton = new Button("PLAY",64, ButtonVariant.LIGHT);
         playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         playButton.addActionListener(e -> {
-            mainPanel.setContentPane(new GamePanel());
+            System.out.println(namePanel.getPlayerName());
+            gameModel.setPlayerName(namePanel.getPlayerName());
+            mainPanel.setContentPane(new GamePanel(gameModel));
             mainPanel.revalidate();
             mainPanel.repaint();
         });
