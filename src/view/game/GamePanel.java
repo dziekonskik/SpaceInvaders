@@ -6,9 +6,11 @@ import model.BattleShipModel;
 import model.BulletModel;
 import model.GameModel;
 import model.MonsterModel;
+import utils.ButtonVariant;
 import utils.Image;
 import utils.MonsterLevel;
 import utils.Position;
+import view.Button;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,11 +49,20 @@ public class GamePanel extends JPanel {
         gameController.startTimers();
 
         setFocusable(true);
+        setLayout(new BorderLayout());
 
         controlButtonsPanel = new ControlButtonsPanel(playerMovement, playerShooting);
-        setLayout(null);
-        add(controlButtonsPanel);
-        controlButtonsPanel.setBounds(16, getHeight() - 120, 320, 90);
+        Button pauseButton = new Button("PAUSE",34, ButtonVariant.LIGHT);
+        pauseButton.addActionListener(e -> {
+            gameController.togglePause();
+            this.requestFocusInWindow();
+        });
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bottomPanel.setOpaque(false);
+        bottomPanel.add(controlButtonsPanel);
+        bottomPanel.add(pauseButton);
+        add(bottomPanel, BoxLayout.X_AXIS);
 
         addKeyListener(new KeyAdapter() {
             @Override

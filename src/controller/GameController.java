@@ -24,6 +24,7 @@ public class GameController {
     private Timer monsterTimer;
     private Timer monsterShootTimer;
     private boolean levelCleared = false;
+    private boolean isPaused = false;
 
     public GameController(GameModel gameModel, BattleShipModel player, ArrayList<MonsterModel> monsters,
                           ArrayList<BulletModel> bullets, ArrayList<BulletModel> monsterBullets, GamePanel gamePanel) {
@@ -106,6 +107,15 @@ public class GameController {
         timer.stop();
         monsterTimer.stop();
         monsterShootTimer.stop();
+    }
+
+    public void togglePause() {
+        if (isPaused) {
+            startTimers();
+        } else {
+            stopTimers();
+        }
+        isPaused = !isPaused;
     }
 
     private void handleCollision() {

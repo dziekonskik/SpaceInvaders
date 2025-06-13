@@ -68,10 +68,12 @@ public class ScoreBoard {
 
         int iconSize = 40;
         int iconY = 60;
+        int iconMargin = 1;
 
         if (heartImg != null) {
             for (int i = 0; i < livesCount; i++) {
-                g2.drawImage(heartImg, livesLabelX + i*iconSize, iconY, iconSize, iconSize, null);
+                int iconX = width - marginX - (i + 1) * (iconSize + iconMargin);
+                g2.drawImage(heartImg, iconX, iconY, iconSize, iconSize, null);
             }
         }
     }

@@ -38,4 +38,7 @@ public class ControlButtonsPanel extends JPanel {
         add(shoot);
         add(right);
     }
+    public Dimension getPreferredSize() {
+        return new Dimension(320, 90);
+    }
 }
