@@ -49,6 +49,13 @@ public class SettingsPanel extends JPanel {
 
         gbc.gridx = 0;
         gbc.gridy++;
+        contentPanel.add(new Label("Enemy lines:", 32), gbc);
+        gbc.gridx = 1;
+        JSpinner enemyLinesSpinner = new JSpinner(new SpinnerNumberModel(gameModel.getEnemyLines(), 1, 10, 1));
+        contentPanel.add(enemyLinesSpinner, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
         contentPanel.add(new Label("Enemy fall speed (ms):",32), gbc);
         gbc.gridx = 1;
         JSlider enemyFallSpeedSlider = new JSlider(1, 500, gameModel.getEnemyFallSpeed());
@@ -68,31 +75,23 @@ public class SettingsPanel extends JPanel {
 
         gbc.gridx = 0;
         gbc.gridy++;
-        contentPanel.add(new Label("Enemy lines:", 32), gbc);
-        gbc.gridx = 1;
-        JSpinner enemyLinesSpinner = new JSpinner(new SpinnerNumberModel(gameModel.getEnemyLines(), 1, 10, 1));
-        contentPanel.add(enemyLinesSpinner, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy++;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
 
         Button backButton = new Button("BACK", 48, ButtonVariant.DARK);
         backButton.addActionListener(e -> {
-            gameModel.setEnemiesPerLine((int) enemiesPerLineSpinner.getValue());
-            gameModel.setEnemyLines((int) enemyLinesSpinner.getValue());
-            gameModel.setEnemyFallSpeed(enemyFallSpeedSlider.getValue());
-            gameModel.setSpecialModeEnabled(specialModeCheckBox.isSelected());
+            this.gameModel.setEnemiesPerLine((int) enemiesPerLineSpinner.getValue());
+            this.gameModel.setEnemyLines((int) enemyLinesSpinner.getValue());
+            this.gameModel.setEnemyFallSpeed(enemyFallSpeedSlider.getValue());
+            this.gameModel.setSpecialModeEnabled(specialModeCheckBox.isSelected());
 
-            mainPanel.setJMenuBar(null);
-            mainPanel.setContentPane(new WelcomePanel(mainPanel, gameModel));
-            mainPanel.revalidate();
-            mainPanel.repaint();
+            this.mainPanel.setJMenuBar(null);
+            this.mainPanel.setContentPane(new WelcomePanel(mainPanel, gameModel));
+            this.mainPanel.revalidate();
+            this.mainPanel.repaint();
         });
         contentPanel.add(backButton, gbc);
-
         add(contentPanel, BorderLayout.CENTER);
     }
 

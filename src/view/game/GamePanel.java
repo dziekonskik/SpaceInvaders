@@ -8,6 +8,8 @@ import utils.Image;
 import utils.MonsterLevel;
 import utils.Position;
 import view.Button;
+import view.MainView;
+import view.BottomButtonsPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,6 +20,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class GamePanel extends JPanel {
+    MainView mainPanel;
     private final GameModel gameModel;
     private final Image background;
     private final ScoreBoard scoreBoard;
@@ -32,9 +35,10 @@ public class GamePanel extends JPanel {
     private final boolean[] playerMovement = new boolean[2];
     private final boolean[] playerShooting = new boolean[1];
 
-    public GamePanel(GameModel gameModel, HighScoresModel highScoresModel) {
+    public GamePanel(GameModel gameModel, HighScoresModel highScoresModel, MainView mainPanel) {
         background = new Image("/resources/bg.jpg");
         player = new BattleShipModel(new Position(getWidth() / 2, 0), new Image("/resources/spaceship3.png"));
+        this.mainPanel = mainPanel;
         this.gameModel = gameModel;
         scoreBoard = new ScoreBoard(gameModel);
         scoreBoardController = new ScoreBoardController(gameModel, this::repaint, this::repaint);
@@ -54,11 +58,13 @@ public class GamePanel extends JPanel {
             gameController.togglePause();
             this.requestFocusInWindow();
         });
+        BottomButtonsPanel bottomButtonsPanel = new BottomButtonsPanel(this.mainPanel, gameModel, this);
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bottomPanel.setOpaque(false);
         bottomPanel.add(controlButtonsPanel);
         bottomPanel.add(pauseButton);
+        bottomPanel.add(bottomButtonsPanel);
         add(bottomPanel, BoxLayout.X_AXIS);
 
         addKeyListener(new KeyAdapter() {
@@ -140,6 +146,16 @@ public class GamePanel extends JPanel {
                 monsters.add(new MonsterModel(new Position(x, y), monsterLevel));
             }
         }
+    }
+
+    public void restartGame() {
+        gameModel.restart();
+        monsters.clear();
+        bullets.clear();
+        monsterBullets.clear();
+        initMonsters();
+        repaint();
+        requestFocusInWindow();
     }
 
     private void drawMonsters(Graphics g) {

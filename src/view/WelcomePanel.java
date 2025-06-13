@@ -43,17 +43,17 @@ public class WelcomePanel extends JPanel {
         Button playButton = new Button("PLAY",64, ButtonVariant.LIGHT);
         playButton.addActionListener(e -> {
             if (namePanel.getPlayerName().isBlank()) return;
-            gameModel.setPlayerName(namePanel.getPlayerName());
-            mainPanel.setContentPane(new GamePanel(gameModel, highScoresModel));
-            mainPanel.revalidate();
-            mainPanel.repaint();
+            this.gameModel.setPlayerName(namePanel.getPlayerName());
+            this.mainPanel.setContentPane(new GamePanel(this.gameModel, highScoresModel, this.mainPanel));
+            this.mainPanel.revalidate();
+            this.mainPanel.repaint();
         });
 
         Button settingsButton = new Button("SETTINGS", 48, ButtonVariant.DARK);
         settingsButton.addActionListener(e -> {
-            mainPanel.setContentPane(new SettingsPanel(mainPanel, gameModel));
-            mainPanel.revalidate();
-            mainPanel.repaint();
+            this.mainPanel.setContentPane(new SettingsPanel(mainPanel, this.gameModel));
+            this.mainPanel.revalidate();
+            this.mainPanel.repaint();
         });
 
         JPanel buttonsPanel = new JPanel();
