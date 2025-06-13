@@ -22,7 +22,8 @@ public class GamePanel extends JPanel {
     private final GameModel gameModel;
     private final Image background;
     private final ScoreBoard scoreBoard;
-    private EndGamePopup endGamePopup = null;
+    private EndGamePopup endGamePopup;
+    private ControlButtonsPanel controlButtonsPanel;
     private final BattleShipModel player;
     private final GameController gameController;
     private final ScoreBoardController scoreBoardController;
@@ -47,6 +48,11 @@ public class GamePanel extends JPanel {
 
         setFocusable(true);
 
+        controlButtonsPanel = new ControlButtonsPanel(playerMovement, playerShooting);
+        setLayout(null);
+        add(controlButtonsPanel);
+        controlButtonsPanel.setBounds(16, getHeight() - 120, 320, 90);
+
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -70,6 +76,7 @@ public class GamePanel extends JPanel {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                controlButtonsPanel.setBounds(16, getHeight() - 120, 320, 90);
                 centerPlayerX();
                 centerMonstersX();
                 centerPopupX();
