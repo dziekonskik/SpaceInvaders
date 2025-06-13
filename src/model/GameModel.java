@@ -5,6 +5,10 @@ public class GameModel {
     private int score = 0;
     private int hiScore = 0;
     private int lives = 3;
+    private int enemiesPerLine = 5;
+    private int enemyFallSpeed = 200;
+    private int enemyLines = 3;
+    private boolean specialModeEnabled = false;
     private String playerName;
 
     public int getCurrentLevel() {
@@ -55,5 +59,37 @@ public class GameModel {
 
     public String getPlayerName() {
         return playerName;
+    }
+
+    public int getEnemiesPerLine() {
+        return enemiesPerLine;
+    }
+
+    public void setEnemiesPerLine(int enemiesPerLine) {
+        this.enemiesPerLine = enemiesPerLine;
+    }
+
+    public int getEnemyFallSpeed() {
+        return enemyFallSpeed;
+    }
+
+    public void setEnemyFallSpeed(int enemyFallSpeed) {
+        this.enemyFallSpeed = enemyFallSpeed;
+    }
+
+    public int getEnemyLines() {
+        return enemyLines;
+    }
+
+    public void setEnemyLines(int enemyLines) {
+        this.enemyLines = enemyLines;
+    }
+
+    public boolean isSpecialModeEnabled() {
+        return specialModeEnabled;
+    }
+
+    public void setSpecialModeEnabled(boolean specialModeEnabled) {
+        this.specialModeEnabled = specialModeEnabled;
     }
 }

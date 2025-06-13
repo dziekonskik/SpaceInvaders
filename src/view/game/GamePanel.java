@@ -116,8 +116,8 @@ public class GamePanel extends JPanel {
     public void initMonsters() {
         monsters.clear();
 
-        int rows = 2 * gameModel.getCurrentLevel();
-        int cols = 5;
+        int rows = gameModel.getEnemyLines();
+        int cols = gameModel.getEnemiesPerLine();
         MonsterModel example = new MonsterModel(new Position(0, 0), MonsterLevel.LEVEL1);
         int monsterWidth = example.getWidth();
         int monsterHeight = example.getHeight();

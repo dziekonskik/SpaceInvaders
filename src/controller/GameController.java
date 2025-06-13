@@ -74,7 +74,7 @@ public class GameController {
             gamePanel.repaint();
         });
 
-        monsterTimer = new Timer(200 / gameModel.getCurrentLevel(), e -> {
+        monsterTimer = new Timer(gameModel.getEnemyFallSpeed(), e -> {
             monsterController.moveGroup(gamePanel.getWidth());
             gamePanel.repaint();
         });

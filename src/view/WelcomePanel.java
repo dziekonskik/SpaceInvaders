@@ -13,15 +13,15 @@ import java.util.ArrayList;
 
 public class WelcomePanel extends JPanel {
     private final MainView mainPanel;
-    private final PlayerNamePanel namePanel;
     private final GameModel gameModel;
+    private final PlayerNamePanel namePanel;
     private final HighScoresModel highScoresModel;
     private final Image logo;
 
-    public WelcomePanel(MainView mainPanel) {
+    public WelcomePanel(MainView mainPanel, GameModel gameModel) {
         logo = new Image("/resources/toppng.com-spaceinvaderslogo-space-invaders-logo-777x336.png");
         this.mainPanel = mainPanel;
-        gameModel = new GameModel();
+        this.gameModel = gameModel;
         namePanel =  new PlayerNamePanel();
         highScoresModel = new HighScoresModel();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -41,7 +41,6 @@ public class WelcomePanel extends JPanel {
         });
 
         Button playButton = new Button("PLAY",64, ButtonVariant.LIGHT);
-
         playButton.addActionListener(e -> {
             if (namePanel.getPlayerName().isBlank()) return;
             gameModel.setPlayerName(namePanel.getPlayerName());
@@ -49,12 +48,22 @@ public class WelcomePanel extends JPanel {
             mainPanel.revalidate();
             mainPanel.repaint();
         });
+
+        Button settingsButton = new Button("SETTINGS", 48, ButtonVariant.DARK);
+        settingsButton.addActionListener(e -> {
+            mainPanel.setContentPane(new SettingsPanel(mainPanel, gameModel));
+            mainPanel.revalidate();
+            mainPanel.repaint();
+        });
+
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
         buttonsPanel.setOpaque(false);
         buttonsPanel.add(playButton);
         buttonsPanel.add(Box.createRigidArea(new Dimension(50, 50)));
         buttonsPanel.add(highScoresButton);
+        buttonsPanel.add(Box.createRigidArea(new Dimension(50, 50)));
+        buttonsPanel.add(settingsButton);
         add(buttonsPanel);
         add(Box.createRigidArea(new Dimension(0, 50)));
     }
