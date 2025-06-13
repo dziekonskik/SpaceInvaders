@@ -2,10 +2,7 @@ package view.game;
 
 import controller.GameController;
 import controller.ScoreBoardController;
-import model.BattleShipModel;
-import model.BulletModel;
-import model.GameModel;
-import model.MonsterModel;
+import model.*;
 import utils.ButtonVariant;
 import utils.Image;
 import utils.MonsterLevel;
@@ -35,7 +32,7 @@ public class GamePanel extends JPanel {
     private final boolean[] playerMovement = new boolean[2];
     private final boolean[] playerShooting = new boolean[1];
 
-    public GamePanel(GameModel gameModel) {
+    public GamePanel(GameModel gameModel, HighScoresModel highScoresModel) {
         background = new Image("/resources/bg.jpg");
         player = new BattleShipModel(new Position(getWidth() / 2, 0), new Image("/resources/spaceship3.png"));
         this.gameModel = gameModel;
@@ -44,7 +41,7 @@ public class GamePanel extends JPanel {
 
         initMonsters();
 
-        gameController = new GameController(gameModel, player, monsters, bullets, monsterBullets, this);
+        gameController = new GameController(gameModel, player, monsters, bullets, monsterBullets, highScoresModel,this);
         gameController.startGameLoop(playerMovement, playerShooting);
         gameController.startTimers();
 
@@ -198,9 +195,7 @@ public class GamePanel extends JPanel {
 
     public void showPopup(String message, Runnable onClose) {
         if (endGamePopup != null) return;
-
         gameController.stopTimers();
-
         endGamePopup = new EndGamePopup(
                 message,
                 e -> {

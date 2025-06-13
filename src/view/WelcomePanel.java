@@ -1,6 +1,7 @@
 package view;
 
 import model.GameModel;
+import model.HighScoresModel;
 import utils.ButtonVariant;
 import utils.FontManager;
 import utils.Image;
@@ -8,11 +9,13 @@ import view.game.GamePanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class WelcomePanel extends JPanel {
     private final MainView mainPanel;
     private final PlayerNamePanel namePanel;
     private final GameModel gameModel;
+    private final HighScoresModel highScoresModel;
     private final Image logo;
 
     public WelcomePanel(MainView mainPanel) {
@@ -20,24 +23,39 @@ public class WelcomePanel extends JPanel {
         this.mainPanel = mainPanel;
         gameModel = new GameModel();
         namePanel =  new PlayerNamePanel();
+        highScoresModel = new HighScoresModel();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Box.createVerticalGlue());
 
         add(namePanel);
         add(Box.createRigidArea(new Dimension(0, 32)));
 
+        Button highScoresButton = new Button("HIGH SCORES",48, ButtonVariant.DARK);
+        highScoresButton.addActionListener(e -> {
+            ArrayList<HighScoresModel.ScoreEntry> topScores = (ArrayList<HighScoresModel.ScoreEntry>) highScoresModel.getScores();
+            StringBuilder sb = new StringBuilder();
+            for (HighScoresModel.ScoreEntry entry : topScores) {
+                sb.append(entry.name).append(" - ").append(entry.score).append("\n");
+            }
+            JOptionPane.showMessageDialog(this, sb.toString(), "Top 10", JOptionPane.INFORMATION_MESSAGE);
+        });
+
         Button playButton = new Button("PLAY",64, ButtonVariant.LIGHT);
-        playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         playButton.addActionListener(e -> {
-            System.out.println(namePanel.getPlayerName());
+            if (namePanel.getPlayerName().isBlank()) return;
             gameModel.setPlayerName(namePanel.getPlayerName());
-            mainPanel.setContentPane(new GamePanel(gameModel));
+            mainPanel.setContentPane(new GamePanel(gameModel, highScoresModel));
             mainPanel.revalidate();
             mainPanel.repaint();
         });
-        add(playButton);
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
+        buttonsPanel.setOpaque(false);
+        buttonsPanel.add(playButton);
+        buttonsPanel.add(Box.createRigidArea(new Dimension(50, 50)));
+        buttonsPanel.add(highScoresButton);
+        add(buttonsPanel);
         add(Box.createRigidArea(new Dimension(0, 50)));
     }
 

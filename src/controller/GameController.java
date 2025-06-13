@@ -19,6 +19,7 @@ public class GameController {
     private final ArrayList<MonsterModel> monsters;
     private final ArrayList<BulletModel> bullets;
     private final ArrayList<BulletModel> monsterBullets;
+    private final HighScoresModel highScoresModel;
 
     private Timer timer;
     private Timer monsterTimer;
@@ -27,16 +28,18 @@ public class GameController {
     private boolean isPaused = false;
 
     public GameController(GameModel gameModel, BattleShipModel player, ArrayList<MonsterModel> monsters,
-                          ArrayList<BulletModel> bullets, ArrayList<BulletModel> monsterBullets, GamePanel gamePanel) {
+                          ArrayList<BulletModel> bullets, ArrayList<BulletModel> monsterBullets, HighScoresModel highScoresModel, GamePanel gamePanel) {
         this.gameModel = gameModel;
         this.player = player;
         this.monsters = monsters;
         this.bullets = bullets;
         this.monsterBullets = monsterBullets;
+        this.highScoresModel = highScoresModel;
         this.gamePanel = gamePanel;
 
         this.playerController = new BattleShipController(player);
         this.monsterController = new MonsterController(monsters);
+
     }
 
     public void startGameLoop(boolean[] playerMovement, boolean[] playerShooting) {
@@ -171,6 +174,7 @@ public class GameController {
                 "You won level " + gameModel.getCurrentLevel() + "!" + "\nPREPARE!";
 
         gamePanel.showPopup(message, () -> {
+            updateHighScores();
             levelCleared = false;
             bullets.clear();
             monsterBullets.clear();
@@ -187,6 +191,7 @@ public class GameController {
         String lifeGrammar = gameModel.getLives() > 1 ? "lives!" : "life!";
         if (gameModel.getLives() <= 0) {
             gamePanel.showPopup("YOU LOST :(", () -> {
+                updateHighScores();
                 gameModel.restart();
                 gameModel.setCurrentLevel(1);
                 monsters.clear();
@@ -196,6 +201,16 @@ public class GameController {
             });
         } else {
             gamePanel.showPopup("You have " + gameModel.getLives() + " " + lifeGrammar, () -> {});
+        }
+    }
+
+    private void updateHighScores() {
+        int currentScore = gameModel.getScore();
+        if (currentScore > highScoresModel.getMinScore()) {
+            String playerName = gameModel.getPlayerName();
+            if (playerName != null && !playerName.isBlank()) {
+                highScoresModel.addScore(playerName, currentScore);
+            }
         }
     }
 }
