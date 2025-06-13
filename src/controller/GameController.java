@@ -44,8 +44,8 @@ public class GameController {
 
     public void startGameLoop(boolean[] playerMovement, boolean[] playerShooting) {
         timer = new Timer(50, e -> {
-            if (playerMovement[0]) playerController.move(-10, 0, gamePanel.getWidth() - player.getWidth());
-            if (playerMovement[1]) playerController.move(10, 0, gamePanel.getWidth() - player.getWidth());
+            if (playerMovement[0]) playerController.move(gameModel.isSpecialModeEnabled() ? 10 : -10, 0, gamePanel.getWidth() - player.getWidth());
+            if (playerMovement[1]) playerController.move(gameModel.isSpecialModeEnabled() ? -10 : 10, 0, gamePanel.getWidth() - player.getWidth());
             if (playerShooting[0]) {
                 int bulletY = gamePanel.getHeight() - player.getHeight() - 50;
                 bullets.add(playerController.shoot(bulletY));

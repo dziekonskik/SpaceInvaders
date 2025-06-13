@@ -148,6 +148,10 @@ public class GamePanel extends JPanel {
         }
     }
 
+    public void movePlayer() {
+
+    }
+
     public void restartGame() {
         gameModel.restart();
         monsters.clear();
